@@ -524,7 +524,7 @@ class Tracker(FloatLayout):
         return self.auto_hints[len(self.auto_hints) - 1]
 
 
-class HUD(App):
+class HUDApp(App):
     mouse_position = ListProperty([])
     def build(self):
         # bind mouse position to on_mouse
@@ -542,4 +542,4 @@ class HUD(App):
         self.mouse_position = [p[0], p[1]]
 
 if __name__ == '__main__':
-    HUD().run()
+    HUDApp().run()
