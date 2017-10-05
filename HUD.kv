@@ -1,0 +1,600 @@
+#: kivy 1.9.1
+#: import Animation kivy.animation.Animation
+
+##############
+# Constants: #
+##############
+
+# colors
+#:set highlight_1 [1, 1, 1, 1]
+#:set button_2 [0.96, 0.75, 0.75, 1]
+#:set radio [1, 1, 1, 0.8]
+#:set radio_down [0.99, 0.78, 0.78, 1] 
+#:set button_1 [0.65, 0.45, 0.45, 1]
+#:set text_input_1 [0.26, 0.29, 0.31, .21]
+#:set bg_1 [0.26, 0.27, 0.29, 1]
+#:set bg_color [0.13, 0.15, 0.17, 1]
+
+# bf = bump factor
+#:set bf 0.02
+#:set radio_diameter 0.3
+#:set cbox_alignment 0.64
+#:set cbox_spacing 0.05
+
+<HUD>:
+    Tracker:
+
+#####################
+# Class Extensions: #
+#####################
+
+[FileListEntry@FloatLayout+TreeViewNode]:
+    locked: False
+    entries: []
+    path: ctx.path
+    is_selected: self.path in ctx.controller().selection
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: '24dp' if dp(1) > 1 else '24dp'
+    is_leaf: not ctx.isdir or ctx.name.endswith('..' + ctx.sep) or self.locked
+    on_touch_down: self.collide_point(*args[1].pos) and ctx.controller().entry_touched(self, args[1])
+    on_touch_up: self.collide_point(*args[1].pos) and ctx.controller().entry_released(self, args[1])
+    # don't touch anything above this comment.
+    BoxLayout:
+        pos: root.pos
+        size_hint_x: None
+        width: root.width - dp(10)
+        Label:
+            color: highlight_1
+            id: filename
+            text_size: self.width, None
+            halign: 'left'
+            shorten: True
+            text: ctx.name
+            font_name: 'RobotoMono-Regular.ttf'
+<PlayerLabel@Label>:
+    color: highlight_1
+    canvas.before:
+        Color:
+            rgba: 0.15, 0.1, 0.1, 0
+    font_name: 'RobotoMono-Regular.ttf'
+    font_size: 19
+    size_hint: None, None
+    text_size: self.size
+    markup: True
+<UserLabel@Label>
+    color: highlight_1
+    canvas.before:
+        Color:
+            rgba: 0.15, 0.1, 0.1, 0
+    font_name: 'RobotoMono-Regular.ttf'
+    text_size: self.size
+    size_hint: None, None
+    halign: "center"
+    valign: "top"
+    markup: True
+    canvas:
+        Color:
+            rgba: 0.2, 0.2, 0.2, 0
+        Rectangle
+            pos: self.pos
+            size: self.size
+<MenuLabel@Label>
+    color: highlight_1
+    font_name: 'RobotoMono-Regular.ttf'
+    text_size: self.size
+    halign: 'left'
+    size_hint: None, None
+    canvas:
+        Color:
+            rgba: 0.2, 0.2, 0.2, 0
+        Rectangle
+            pos: self.pos
+            size: self.size
+<BumpController@Label>
+    # This class sends mouse position to main
+    mouse_coords: app.mouse_position
+    text_size: self.size
+    size_hint: None, None
+<HighlightButton@Button>
+    color_active: button_2
+    color_passive: button_1
+    button_color: button_1
+
+<Tracker>:
+    bump_controller: _bump_controller
+    bump_controller2: _bump_controller2
+    # bump controller xxxx text
+    bc_layout_t: _bc_layout_t
+    bc_path_t: _bc_path_t
+    hh_save_button: _hh_save_button
+    layout_save_button: _layout_save_button
+    saved_hh_path: _saved_hh_path
+    saved_layout: _saved_layout
+    quit: _quit
+    canvas.before:
+        Color:
+            rgba: bg_color
+        Rectangle:
+            size: root.scr_d[0] * root.win_scale[0], root.scr_d[1] * root.win_scale[1]
+    
+    #############
+    # Settings: #
+    #############
+
+    RelativeLayout:
+        # move settings off screen if a table isn't active (janky)
+        pos: (5000, 5000) if root.tab_d[2] not in [None, 'loading'] else (0,0)
+        BumpController:
+            id: _bump_controller
+            max_size: root.scr_d[0] * root.win_scale[0] * (0.385 + bf), root.scr_d[1] * root.win_scale[1] * (0.385 + bf)
+            max_pos: root.scr_d[0] * root.win_scale[0] * (0.165 - bf * 0.5), root.scr_d[1] * root.win_scale[1] * (0.1 - bf * 0.5)
+            min_size: root.scr_d[0] * root.win_scale[0] * 0.385, root.scr_d[1] * root.win_scale[1] * 0.385
+            min_pos: root.scr_d[0] * root.win_scale[0] * 0.165, root.scr_d[1] * root.win_scale[1] * 0.1
+            size: root.scr_d[0] * root.win_scale[0] * 0.385, root.scr_d[1] * root.win_scale[1] * 0.385
+            pos: root.scr_d[0] * root.win_scale[0] * 0.165, root.scr_d[1] * root.win_scale[1] * 0.1
+            canvas.before:
+                Color:
+                    rgba: bg_color
+                Rectangle:
+                    size: root.scr_d[0] * root.win_scale[0], root.scr_d[1] * root.win_scale[1]
+                Color:
+                    rgba: bg_1
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+        Label:
+            id: _bump_controller2
+            text_size: self.size
+            size_hint: None, None
+            max_size: root.scr_d[0] * root.win_scale[0] * (.385 + bf), root.scr_d[1] * root.win_scale[1] * (.265 + bf)
+            max_pos: root.scr_d[0] * root.win_scale[0] * (.165 - bf * 0.5), root.scr_d[1] * root.win_scale[1] * (.52 - bf * 0.5)
+            min_size: root.scr_d[0] * root.win_scale[0] * .385, root.scr_d[1] * root.win_scale[1] * .265
+            min_pos: root.scr_d[0] * root.win_scale[0] * .165, root.scr_d[1] * root.win_scale[1] * .52
+            size: root.scr_d[0] * root.win_scale[0] * .385, root.scr_d[1] * root.win_scale[1] * .265
+            pos: root.scr_d[0] * root.win_scale[0] * .165, root.scr_d[1] * root.win_scale[1] * .52
+            canvas.before:
+                Color:
+                    rgba: bg_1
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+        RelativeLayout:
+            pos: (root.scr_d[0] * root.win_scale[0] * 0, root.scr_d[1] * root.win_scale[1] * 0.05)
+            MenuLabel:
+                id: _bc_layout_t
+                size: root.scr_d[0] * root.win_scale[0] * 0.3, root.scr_d[1] * root.win_scale[1] * 0.05
+                x: root.scr_d[0] * root.win_scale[0] * 0.18
+                y: root.scr_d[1] * root.win_scale[1] * 0.72
+                xn: root.scr_d[0] * root.win_scale[0] * 0.18
+                yn: root.scr_d[1] * root.win_scale[1] * 0.72
+                xa: root.scr_d[0] * root.win_scale[0] * 0.17
+                ya: root.scr_d[1] * root.win_scale[1] * 0.73
+                text: 'Layout Settings:'
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.025
+        RelativeLayout:
+            pos: (root.scr_d[0] * root.win_scale[0] * 0.0125, root.scr_d[1] * root.win_scale[1] * 0.025)
+            MenuLabel:
+                size: root.scr_d[0] * root.win_scale[0] * 0.1, root.scr_d[1] * root.win_scale[1] * 0.05
+                x: root.scr_d[0] * root.win_scale[0] * 0.2
+                y: root.scr_d[1] * root.win_scale[1] * 0.65
+                text: 'Auto'
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.02
+            MenuLabel:
+                size: root.scr_d[0] * root.win_scale[0] * 0.1, root.scr_d[1] * root.win_scale[1] * 0.05
+                x: root.scr_d[0] * root.win_scale[0] * 0.2
+                y: root.scr_d[1] * root.win_scale[1] * 0.6
+                text: 'Pro'
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.02
+            MenuLabel:
+                size: root.scr_d[0] * root.win_scale[0] * 0.1, root.scr_d[1] * root.win_scale[1] * 0.05
+                x: root.scr_d[0] * root.win_scale[0] * 0.2
+                y: root.scr_d[1] * root.win_scale[1] * 0.55
+                text: 'Custom'
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.02
+            CheckBox: 
+                x: root.scr_d[0] * root.win_scale[0] * 0.28
+                y: root.scr_d[1] * root.win_scale[1] * cbox_alignment
+                size_hint: None, None
+                size: root.scr_d[1] * root.win_scale[1] * 0.04, root.scr_d[1] * root.win_scale[1] * 0.05
+                active: root.auto_bool
+                color: highlight_1
+                group: 'hudoptions'
+                on_press: root.hud_label_toggle('auto')
+                canvas.after:
+                    Color:
+                        rgba: bg_1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                    Color:
+                        rgba: radio
+                    Line:
+                        circle: self.pos[0] + 0.5 * self.size[0], self.pos[1] + 0.5 * self.size[1], self.size[0] * radio_diameter
+                    Color:
+                        rgba: radio_down[0], radio_down[1], radio_down[2], int(root.auto_bool) * 0.5
+                    Line:
+                        circle: self.pos[0] + 0.5 * self.size[0], self.pos[1] + 0.5 * self.size[1], self.size[0] * 0.1
+                        width: self.size[0] * 0.1
+                
+            CheckBox:
+                x: root.scr_d[0] * root.win_scale[0] * 0.28
+                y: root.scr_d[1] * root.win_scale[1] * (cbox_alignment - cbox_spacing)
+                size_hint: None, None
+                size: root.scr_d[1] * root.win_scale[1] * 0.04, root.scr_d[1] * root.win_scale[1] * 0.05
+                active: root.pro_bool
+                color: highlight_1
+                group: 'hudoptions'
+                on_press: root.hud_label_toggle('pro')
+                canvas.after:
+                    Color:
+                        rgba: bg_1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                    Color:
+                        rgba: radio
+                    Line:
+                        circle: self.pos[0] + 0.5 * self.size[0], self.pos[1] + 0.5 * self.size[1], self.size[0] * radio_diameter
+                    Color:
+                        rgba: radio_down[0], radio_down[1], radio_down[2], int(root.pro_bool) * 0.5
+                    Line:
+                        circle: self.pos[0] + 0.5 * self.size[0], self.pos[1] + 0.5 * self.size[1], self.size[0] * 0.1
+                        width: self.size[0] * 0.1
+            CheckBox:
+                x: root.scr_d[0] * root.win_scale[0] * 0.28
+                y: root.scr_d[1] * root.win_scale[1] * (cbox_alignment - (cbox_spacing * 2))
+                size_hint: None, None
+                size: root.scr_d[1] * root.win_scale[1] * 0.04, root.scr_d[1] * root.win_scale[1] * 0.05
+                active: root.custom_bool
+                color: highlight_1
+                group: 'hudoptions'
+                on_press: root.hud_label_toggle('custom')
+                canvas.after:
+                    Color:
+                        rgba: bg_1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                    Color:
+                        rgba: radio
+                    Line:
+                        circle: self.pos[0] + 0.5 * self.size[0], self.pos[1] + 0.5 * self.size[1], self.size[0] * radio_diameter
+                    Color:
+                        rgba: radio_down[0], radio_down[1], radio_down[2], int(root.custom_bool) * 0.5
+                    Line:
+                        circle: self.pos[0] + 0.5 * self.size[0], self.pos[1] + 0.5 * self.size[1], self.size[0] * 0.1
+                        width: self.size[0] * 0.1
+            # Save Button
+            HighlightButton:
+                id: _layout_save_button
+                x: root.scr_d[0] * root.win_scale[0] * 0.3175
+                y: root.scr_d[1] * root.win_scale[1] * 0.495
+                text: 'Save Layout'
+                font_name: 'RobotoMono-Regular.ttf'
+                size_hint: None, None
+                text_size: self.size
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.35 * 0.04
+                size: root.scr_d[0] * root.win_scale[0] * 0.2, root.scr_d[1] * root.win_scale[1] * 0.03
+                min_size: root.scr_d[0] * root.win_scale[0] * 0.2, root.scr_d[1] * root.win_scale[1] * 0.03
+                max_size: root.scr_d[0] * root.win_scale[0] * 0.21, root.scr_d[1] * root.win_scale[1] * 0.04
+                halign: 'center'
+                valign: 'middle'
+                background_color: 0,0,0,0
+                button_color: button_1
+                color: highlight_1
+                on_press: root.save_settings()
+                canvas.before:
+                    Color:
+                        rgba: self.button_color
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+        MenuLabel:
+            id: _bc_path_t
+            size: root.scr_d[0] * root.win_scale[0] * 0.3, root.scr_d[1] * root.win_scale[1] * 0.05
+            x: root.scr_d[0] * root.win_scale[0] * 0.18
+            y: root.scr_d[1] * root.win_scale[1] * 0.47
+            xn: root.scr_d[0] * root.win_scale[0] * 0.18
+            yn: root.scr_d[1] * root.win_scale[1] * 0.47
+            xa: root.scr_d[0] * root.win_scale[0] * 0.17
+            ya: root.scr_d[1] * root.win_scale[1] * 0.48
+            text: 'Hand History Folder Location:'
+            font_size: root.scr_d[1] * root.win_scale[1] * 0.025
+        # Custom HUD config documentation
+        Label:
+            id: custom_config_label
+            x: root.scr_d[0] * root.win_scale[0] * 0.57
+            y: root.scr_d[1] * root.win_scale[1] * 0.45
+            size_hint: None, None
+            size: root.scr_d[0] * root.win_scale[0] * 0.2, root.scr_d[1] * root.win_scale[1] * 0.3
+            text_size: self.size
+            markup: True
+            text: root.custom_instructions
+            halign: "left"
+            valign: "top"
+            color: highlight_1
+            padding: 0,0
+            font_name: 'RobotoMono-Regular.ttf'
+            font_size: 0.015 * root.scr_d[1] * root.win_scale[1]
+        TextInput:
+            border: 4,4,4,4
+            x: root.scr_d[0] * root.win_scale[0] * .33
+            y: root.scr_d[1] * root.win_scale[0] * .55
+            size_hint: None, None
+            size: root.scr_d[0] * root.win_scale[0] * 0.2, root.scr_d[1] * root.win_scale[1] * 0.2
+            background_color: text_input_1
+            foreground_color: highlight_1
+            cursor_color: highlight_1
+            font_name: 'RobotoMono-Regular.ttf'
+            text: root.custom_text   
+            font_size: root.scr_d[1] * root.win_scale[1] * 0.015
+            on_text: root.text_update(self.text)
+            hint_text: 'Enter custom config'
+            rect_alpha: 1
+            on_focus: Animation(rect_alpha = abs(self.rect_alpha - 1), duration = .2).start(self)
+            canvas.after:
+                Color:
+                    rgba: bg_color[0], bg_color[1], bg_color[2], self.rect_alpha
+                Rectangle:
+                    size: custom_config_label.size
+                    pos: custom_config_label.pos
+        BoxLayout:
+            size_hint: None, None
+            size: root.scr_d[0] * root.win_scale[0] * 0.33, root.scr_d[1] * root.win_scale[1] * 0.35
+            x: root.scr_d[0] * root.win_scale[0] * .2
+            y: root.scr_d[1] * root.win_scale[1] * .1
+            orientation: "vertical"
+            FileChooserListView:
+                # TODO: Set path to a function that auto guesses the path of HH
+                id: filechooser
+                # these must be true to avoid touch-screen behavior
+                dirselect: True
+                multiselect: True
+                # by default filters don't apply to dirs, so filter everything
+                filters: '[!]'
+                size_hint_y: 75
+                on_selection: txtinput.text = self.path
+            TextInput:
+                id: txtinput
+                size_hint_y: 15
+                text: root.load_hh_path()
+                background_color: text_input_1
+                foreground_color: highlight_1
+                cursor_color: highlight_1
+                font_name: 'RobotoMono-Regular.ttf'
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.35 * 0.04
+                border: 4,4,4,4 
+            # HH Save Button
+            HighlightButton:
+                id: _hh_save_button
+                size_hint_y: 10
+                text: "Save Path"
+                font_name: 'RobotoMono-Regular.ttf'
+                font_size: root.scr_d[1] * root.win_scale[1] * 0.35 * 0.04
+                on_press: root.save_hh_path(filechooser.path)
+                background_color: 0,0,0,0
+                color: highlight_1
+                canvas.before:
+                    Color:
+                        rgba: self.button_color
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+        # Title label
+        Label:
+            x: root.scr_d[0] * root.win_scale[0] * 0.18
+            y: root.scr_d[1] * root.win_scale[1] * 0.8
+            size_hint: None, None
+            text_size: self.size
+            text: 'STEAK'
+            size: root.scr_d[0] * root.win_scale[0] * 0.35, root.scr_d[1] * root.win_scale[1] * 0.15
+            color: button_1
+            font_size: 0.15 * root.scr_d[1] * root.win_scale[1]
+            font_size: 0.11 * root.scr_d[1] * root.win_scale[1]
+            padding: 0,0
+            bold: True
+        Label:
+            x: root.scr_d[0] * root.win_scale[0] * 0.40
+            y: root.scr_d[1] * root.win_scale[1] * 0.8
+            size_hint: None, None
+            text_size: self.size
+            text: 'RAZOR'
+            size: root.scr_d[0] * root.win_scale[0] * 0.35, root.scr_d[1] * root.win_scale[1] * 0.15
+            color: highlight_1
+            font_size: 0.15 * root.scr_d[1] * root.win_scale[1]
+            font_size: 0.11 * root.scr_d[1] * root.win_scale[1]
+            padding: 0,0
+            italic: True
+        # "Saved" labels
+        Label:
+            id: _saved_hh_path
+            x: root.scr_d[0] * root.win_scale[0] * 0.47
+            y: root.scr_d[1] * root.win_scale[1] * 0.47
+            size_hint: None, None
+            text_size: self.size
+            text: '(Saved)'
+            font_name: 'RobotoMono-Regular.ttf'
+            size: root.scr_d[0] * root.win_scale[0] * 0.35, root.scr_d[1] * root.win_scale[1] * 0.15
+            color: 1, 1, 1, 0
+            font_size: 0.025 * root.scr_d[1] * root.win_scale[1]
+            padding: 0,0
+        Label:
+            id: _saved_layout
+            x: root.scr_d[0] * root.win_scale[0] * 0.47
+            y: root.scr_d[1] * root.win_scale[1] * 0.78
+            size_hint: None, None
+            text_size: self.size
+            text: '(Saved)'
+            font_name: 'RobotoMono-Regular.ttf'
+            size: root.scr_d[0] * root.win_scale[0] * 0.35, root.scr_d[1] * root.win_scale[1] * 0.15
+            color: 1, 1, 1, 0
+            font_size: 0.025 * root.scr_d[1] * root.win_scale[1]
+            padding: 0,0
+        # Exit button
+        HighlightButton:
+            id: _quit
+            x: root.scr_d[0] * root.win_scale[0] * 0.7
+            y: root.scr_d[1] * root.win_scale[1] * 0.18
+            on_press: app.stop()
+            text: 'Quit'
+            font_name: 'RobotoMono-Regular.ttf'
+            size_hint: None, None
+            text_size: self.size
+            font_size: root.scr_d[1] * root.win_scale[1] * 0.35 * 0.04
+            size: root.scr_d[0] * root.win_scale[0] * 0.1, root.scr_d[1] * root.win_scale[1] * 0.1
+            min_size: root.scr_d[0] * root.win_scale[0] * 0.2, root.scr_d[1] * root.win_scale[1] * 0.03
+            max_size: root.scr_d[0] * root.win_scale[0] * 0.21, root.scr_d[1] * root.win_scale[1] * 0.04
+            halign: 'center'
+            valign: 'middle'
+            background_color: 0,0,0,0
+            button_color: button_1
+            color: highlight_1
+            on_press: root.save_settings()
+            canvas.before:
+                Color:
+                    rgba: self.button_color
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+
+    ###############
+    # HUD LABELS: #
+    ###############
+
+    # user
+    UserLabel:
+        center_x: root.pos[0] + 0.5 * root.size[0] 
+        y: root.pos[1] - 0.15 * root.size[1]
+        text: root.tab_d[2] if root.tab_d[2] not in [None, 'loading'] else ''
+        size: root.size[0] * 0.4, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # bottom left
+    PlayerLabel:
+        x: root.pos[0] - 0.15 * root.size[0]
+        center_y: root.pos[1] + 0.35 * root.size[1] 
+        text: root.tab_d[3] if root.tab_d[3] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # mid left
+    PlayerLabel:
+        x: root.pos[0] - 0.15 * root.size[0]
+        center_y: root.pos[1] + 0.56 * root.size[1]
+        text: root.tab_d[4] if root.tab_d[4] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # top left
+    PlayerLabel:
+        x: root.pos[0] - 0.15 * root.size[0]
+        center_y: root.pos[1] + 0.75 * root.size[1]
+        text: root.tab_d[5] if root.tab_d[5] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # overhead left
+    PlayerLabel:
+        x: root.pos[0] - 0.15 * root.size[0]
+        center_y: root.pos[1] + 0.9 * root.size[1]
+        text: root.tab_d[6] if root.tab_d[6] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # overhead right
+    PlayerLabel:
+        x: root.pos[0] + root.size[0]
+        center_y: root.pos[1] + 0.9 * root.size[1]  
+        text: root.tab_d[7] if root.tab_d[7] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # top right
+    PlayerLabel:
+        x: root.pos[0] + root.size[0]
+        center_y: root.pos[1] + 0.75 * root.size[1]
+        text: root.tab_d[8] if root.tab_d[8] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # mid right
+    PlayerLabel:
+        x: root.pos[0] +  root.size[0]
+        center_y: root.pos[1] + 0.56 * root.size[1]
+        text: root.tab_d[9] if root.tab_d[9] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # bottom right
+    PlayerLabel:
+        x: root.pos[0] + root.size[0]
+        center_y: root.pos[1] + 0.35 * root.size[1] 
+        text: root.tab_d[10] if root.tab_d[10] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # AUXILLARY HUD LABELS:
+    # bottom left
+    PlayerLabel:
+        x: root.pos[0] - 0.15 * root.size[0]
+        center_y: root.pos[1] + 0.45 * root.size[1] 
+        text: root.tab_d_aux[1] if root.tab_d_aux[1] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # top left
+    PlayerLabel:
+        x: root.pos[0] - 0.15 * root.size[0]
+        center_y: root.pos[1] + 0.75 * root.size[1]
+        text: root.tab_d_aux[2] if root.tab_d_aux[2] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # top center
+    PlayerLabel:
+        center_x: root.pos[0] + 0.5 * root.size[0]
+        y: root.pos[1] + 1.0 * root.size[1]
+        text: root.tab_d_aux[3] if root.tab_d_aux[3] not in [None, 'loading'] else ''
+        halign: "center"
+        valign: "bottom"
+        size: root.scr_d[0] * root.win_scale[0] * 0.4, root.scr_d[1] * root.win_scale[1] * 0.15
+        font_size: 0.019 * root.size[1]
+        canvas:
+            Color:
+                rgba: 0,0,0,0
+            Rectangle
+                pos: self.pos
+                size: self.size
+    # top right
+    PlayerLabel:
+        x: root.pos[0] + root.size[0] 
+        center_y: root.pos[1] + 0.75 * root.size[1]
+        text: root.tab_d_aux[4] if root.tab_d_aux[4] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # bottom right
+    PlayerLabel:
+        x: root.pos[0] + root.size[0] 
+        center_y: root.pos[1] + 0.45 * root.size[1] 
+        text: root.tab_d_aux[5] if root.tab_d_aux[5] not in [None, 'loading'] else ''
+        halign: 'center'
+        size: root.size[0] * 0.15, root.size[1] * 0.15
+        font_size: 0.019 * root.size[1]
+    # tip label
+    ScrollView:
+        x: root.scr_d[0] * root.win_scale[0] * 0.8
+        y: root.scr_d[1] * root.win_scale[1] * 0.1
+        do_scroll_x: False
+        canvas.before:
+            Color:
+                rgba: bg_color
+            Rectangle
+                pos: self.pos if (root.tab_d[2] not in [None, 'loading'] and root.auto_bool) else (5000, 5000)
+                size: self.size
+        UserLabel:
+            halign: 'justify'
+            text: root.tab_d[11] if root.tab_d[11] not in [None, 'loading'] else ''
+            size: root.scr_d[0] * root.win_scale[0] * 0.15, root.scr_d[1] * root.win_scale[1] * 2.5
+            font_size: 0.01 * root.scr_d[1]
+            markup: True

@@ -1,0 +1,7 @@
+*.pyc
+*.db
+*.c
+*.so
+.DS_Store
+scratch.txt
+run_tests.sh
