@@ -5,8 +5,9 @@
 # Clone the SteakRazor repo
 # Inside the SteakRazor repo, run:
 #     python setup.py build_ext --inplace
-# Clone the kivy-sdk repo from:
+# Clone the kivy-sdk-packager repo from:
 #     https://github.com/kivy/kivy-sdk-packager
+# [NOTE: Do not put the packaging repository inside the SteakRazor repo.]
 # put this script in kivy-sdk-packager/osx
 # run sh build-hud.sh ~/path/to/SteakRazor
 
