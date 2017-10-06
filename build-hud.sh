@@ -4,7 +4,7 @@
 # Make sure Kivy is installed in your /Applications folder
 # Clone the SteakRazor repo
 # Inside the SteakRazor repo, run:
-#     python setup.py build_ext --inplace
+#     kivy setup.py build_ext --inplace
 # Clone the kivy-sdk-packager repo from:
 #     https://github.com/kivy/kivy-sdk-packager
 # [NOTE: Do not put the packaging repository inside the SteakRazor repo.]
